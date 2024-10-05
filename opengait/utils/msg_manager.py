@@ -54,6 +54,7 @@ class MessageManager:
 
     def flush(self):
         self.info_dict.clear()
+        # summarywriter.flush() will forcefully write all log information to disk
         self.writer.flush()
 
     def write_to_tensorboard(self, summary):

@@ -22,8 +22,10 @@ class Odict(OrderedDict):
     def append(self, odict):
         dst_keys = self.keys()
         for k, v in odict.items():
+            # ensure that all v is list
             if not is_list(v):
                 v = [v]
+            # list + list = list
             if k in dst_keys:
                 if is_list(self[k]):
                     self[k] += v
@@ -202,4 +204,4 @@ def get_ddp_module(module, find_unused_parameters=False, **kwargs):
 
 def params_count(net):
     n_parameters = sum(p.numel() for p in net.parameters())
-    return 'Parameters Count: {:.5f}M'.format(n_parameters / 1e6)
+    return 'Parameters Count: {:.5f}MB'.format(n_parameters / 1e6)

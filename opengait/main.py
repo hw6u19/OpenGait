@@ -23,10 +23,12 @@ opt = parser.parse_args()
 
 def initialization(cfgs, training):
     msg_mgr = get_msg_mgr()
+    # trainer_cfg or evaluator_cfg
     engine_cfg = cfgs['trainer_cfg'] if training else cfgs['evaluator_cfg']
     output_path = os.path.join('output/', cfgs['data_cfg']['dataset_name'],
                                cfgs['model_cfg']['model'], engine_cfg['save_name'])
     if training:
+    # training needs one more tensorboard's summarywriter than evaluation
         msg_mgr.init_manager(output_path, opt.log_to_file, engine_cfg['log_iter'],
                              engine_cfg['restore_hint'] if isinstance(engine_cfg['restore_hint'], (int)) else 0)
     else:
@@ -42,7 +44,7 @@ def run_model(cfgs, training):
     msg_mgr = get_msg_mgr()
     model_cfg = cfgs['model_cfg']
     msg_mgr.log_info(model_cfg)
-    Model = getattr(models, model_cfg['model'])
+    Model = getattr(models, model_cfg['model']) 
     model = Model(cfgs, training)
     if training and cfgs['trainer_cfg']['sync_BN']:
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
