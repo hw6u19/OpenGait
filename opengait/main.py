@@ -44,12 +44,16 @@ def run_model(cfgs, training):
     msg_mgr = get_msg_mgr()
     model_cfg = cfgs['model_cfg']
     msg_mgr.log_info(model_cfg)
-    Model = getattr(models, model_cfg['model']) 
+    # get the wanted model class
+    Model = getattr(models, model_cfg['model'])
+    # instantiate the model by configs
     model = Model(cfgs, training)
+    # use sync_batch_norm for better data stability during multi-device training
     if training and cfgs['trainer_cfg']['sync_BN']:
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
     if cfgs['trainer_cfg']['fix_BN']:
         model.fix_BN()
+
     model = get_ddp_module(model, cfgs['trainer_cfg']['find_unused_parameters'])
     msg_mgr.log_info(params_count(model))
     msg_mgr.log_info("Model Initialization Finished!")

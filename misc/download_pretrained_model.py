@@ -20,18 +20,18 @@ import requests
 import time
 import sys
 import zipfile
-lasttime = time.time()
+last_time = time.time()
 FLUSH_INTERVAL = 0.1
 
 
 def progress(str, end=False):
-    global lasttime
+    global last_time
     if end:
         str += "\n"
-        lasttime = 0
-    if time.time() - lasttime >= FLUSH_INTERVAL:
+        last_time = 0
+    if time.time() - last_time >= FLUSH_INTERVAL:
         sys.stdout.write("\r%s" % str)
-        lasttime = time.time()
+        last_time = time.time()
         sys.stdout.flush()
 
 
