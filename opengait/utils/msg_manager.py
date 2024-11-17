@@ -58,7 +58,6 @@ class MessageManager:
         self.writer.flush()
 
     def write_to_tensorboard(self, summary):
-
         for k, v in summary.items():
             module_name = k.split('/')[0]
             if module_name not in self.writer_hparams:
@@ -116,6 +115,7 @@ noop = NoOp()
 
 
 def get_msg_mgr():
+    # only rank 0 will get the message manager instance
     if torch.distributed.get_rank() > 0:
         return noop
     else:

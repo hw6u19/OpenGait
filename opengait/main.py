@@ -6,6 +6,7 @@ from modeling import models
 from utils import config_loader, get_ddp_module, init_seeds, params_count, get_msg_mgr
 
 
+# read arguments
 parser = argparse.ArgumentParser(description='Main program for opengait.')
 parser.add_argument('--local_rank', type=int, default=0,
                     help="passed by torch.distributed.launch module")
@@ -66,14 +67,19 @@ def run_model(cfgs, training):
 
 if __name__ == '__main__':
     torch.distributed.init_process_group('nccl', init_method='env://')
+    # check for an inconsistency between the available GPUs and the expected number of processes (world size)
+    # and raises an error if they do not match
     if torch.distributed.get_world_size() != torch.cuda.device_count():
         raise ValueError("Expect number of available GPUs({}) equals to the world size({}).".format(
             torch.cuda.device_count(), torch.distributed.get_world_size()))
+    # merge the needed config file with the default.yaml into cfgs
+    # the following cfgs is the merged python dictionary object
     cfgs = config_loader(opt.cfgs)
     if opt.iter != 0:
         cfgs['evaluator_cfg']['restore_hint'] = int(opt.iter)
         cfgs['trainer_cfg']['restore_hint'] = int(opt.iter)
 
+    # training is true or false
     training = (opt.phase == 'train')
     initialization(cfgs, training)
     run_model(cfgs, training)

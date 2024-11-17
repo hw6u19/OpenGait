@@ -59,6 +59,7 @@ trainer_cfg:
   save_name: tmp
   sync_BN: false
   total_iter: 80000
+
   sampler:
     batch_shuffle: false
     batch_size:
@@ -69,5 +70,6 @@ trainer_cfg:
     frames_num_min: 25
     sample_type: fixed_unordered
     type: TripletSampler
+
   transform:
       - type: BaseSilCuttingTransform

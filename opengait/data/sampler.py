@@ -2,11 +2,14 @@ import math
 import random
 import torch
 import torch.distributed as dist
-import torch.utils.data as tordata
+import torch.utils.data as torchdata
+
+from typing import List
 
 
-class TripletSampler(tordata.sampler.Sampler):
-    def __init__(self, dataset, batch_size, batch_shuffle=False):
+class TripletSampler(torchdata.sampler.Sampler):
+    def __init__(self, dataset, batch_size: List, batch_shuffle=False):
+        super().__init__()
         self.dataset = dataset
         self.batch_size = batch_size
         if len(self.batch_size) != 2:
@@ -23,11 +26,13 @@ class TripletSampler(tordata.sampler.Sampler):
     def __iter__(self):
         while True:
             sample_indices = []
+            # for baseline, self.batch_size[0] is 8
             pid_list = sync_random_sample_list(
                 self.dataset.label_set, self.batch_size[0])
 
             for pid in pid_list:
                 indices = self.dataset.indices_dict[pid]
+                # for baseline, self.batch_size[1] is 16
                 indices = sync_random_sample_list(
                     indices, k=self.batch_size[1])
                 sample_indices += indices
@@ -49,23 +54,38 @@ class TripletSampler(tordata.sampler.Sampler):
         return len(self.dataset)
 
 
-def sync_random_sample_list(obj_list, k, common_choice=False):
+def sync_random_sample_list(obj_list: list, k: int, common_choice=False):
+    """
+    Get k random indices from the input dataset index list.
+
+    Args:
+        obj_list: dataset index list
+        k: number of indices to generate
+        common_choice:
+
+    Returns:
+        The real random index list generated from the input dataset index list
+
+    """
+
     if common_choice:
         idx = random.choices(range(len(obj_list)), k=k) 
         idx = torch.tensor(idx)
+
     if len(obj_list) < k:
         idx = random.choices(range(len(obj_list)), k=k)
         idx = torch.tensor(idx)
     else:
         idx = torch.randperm(len(obj_list))[:k]
+
     if torch.cuda.is_available():
         idx = idx.cuda()
-    torch.distributed.broadcast(idx, src=0)
+    dist.broadcast(idx, src=0)
     idx = idx.tolist()
     return [obj_list[i] for i in idx]
 
 
-class InferenceSampler(tordata.sampler.Sampler):
+class InferenceSampler(torchdata.sampler.Sampler):
     def __init__(self, dataset, batch_size):
         self.dataset = dataset
         self.batch_size = batch_size
@@ -102,7 +122,7 @@ class InferenceSampler(tordata.sampler.Sampler):
         return len(self.dataset)
 
 
-class CommonSampler(tordata.sampler.Sampler):
+class CommonSampler(torchdata.sampler.Sampler):
     def __init__(self,dataset,batch_size,batch_shuffle):
 
         self.dataset = dataset
@@ -110,20 +130,21 @@ class CommonSampler(tordata.sampler.Sampler):
         self.batch_size = batch_size
         if isinstance(self.batch_size,int)==False:
             raise ValueError(
-                "batch_size shoude be (B) not {}".format(batch_size))
+                "batch_size should be integer not {}".format(type(batch_size)))
         self.batch_shuffle = batch_shuffle
         
         self.world_size = dist.get_world_size()
+        # raise triggers an exception that immediately terminates the __init__ and instance creation
         if self.batch_size % self.world_size !=0:
-            raise ValueError("World size ({}) is not divisble by batch_size ({})".format(
+            raise ValueError("World size ({}) is not dividable by batch_size ({})".format(
                 self.world_size, batch_size))
         self.rank = dist.get_rank() 
     
     def __iter__(self):
         while True:
             indices_list = list(range(self.size))
-            sample_indices = sync_random_sample_list(
-                    indices_list, self.batch_size, common_choice=True)
+            sample_indices = sync_random_sample_list(indices_list, k=self.batch_size, common_choice=True)
+
             total_batch_size =  self.batch_size
             total_size = int(math.ceil(total_batch_size /
                                        self.world_size)) * self.world_size
@@ -138,7 +159,7 @@ class CommonSampler(tordata.sampler.Sampler):
 # **************** For GaitSSB ****************
 # Fan, et al: Learning Gait Representation from Massive Unlabelled Walking Videos: A Benchmark, T-PAMI2023
 import random
-class BilateralSampler(tordata.sampler.Sampler):
+class BilateralSampler(torchdata.sampler.Sampler):
     def __init__(self, dataset, batch_size, batch_shuffle=False):
         self.dataset = dataset
         self.batch_size = batch_size

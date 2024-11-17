@@ -8,8 +8,10 @@ import torch.nn as nn
 import torch.autograd as autograd
 import yaml
 import random
+
 from torch.nn.parallel import DistributedDataParallel as DDP
 from collections import OrderedDict, namedtuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 
 class NoOp:
@@ -43,13 +45,25 @@ def Ntuple(description, keys, values):
     return Tuple._make(values)
 
 
-def get_valid_args(obj, input_args, free_keys=[]):
+def get_valid_args(obj, input_args: Dict, free_keys: List[str]) -> Dict:
+    """
+    Return a dictionary that includes argument key-value pairs which are in both the object and sampler_cfg.
+
+    Args:
+        obj: object, which can only be a function or a class.
+        input_args: the sampler_cfg.
+        free_keys: the arguments in sampler_cfg but not used in object.
+    Returns:
+        a dictionary that includes argument key-value pairs which are in both the object and sampler_cfg.
+    """
+
     if inspect.isfunction(obj):
         expected_keys = inspect.getfullargspec(obj)[0]
     elif inspect.isclass(obj):
         expected_keys = inspect.getfullargspec(obj.__init__)[0]
     else:
-        raise ValueError('Just support function and class object!')
+        raise ValueError('Only support object type of function and class !')
+
     unexpect_keys = list()
     expected_args = {}
     for k, v in input_args.items():
@@ -121,7 +135,7 @@ def mkdir(path):
         os.makedirs(path)
 
 
-def MergeCfgsDict(src, dst):
+def MergeCfgsDict(src: dict, dst: dict):
     for k, v in src.items():
         if (k not in dst.keys()) or (type(v) != type(dict())):
             dst[k] = v
@@ -139,10 +153,13 @@ def clones(module, N):
 
 def config_loader(path):
     with open(path, 'r') as stream:
+        # safe_load will not apply changes to the original yaml file
+        # no link between the file and python object using safe_load
         src_cfgs = yaml.safe_load(stream)
     with open("./configs/default.yaml", 'r') as stream:
         dst_cfgs = yaml.safe_load(stream)
     MergeCfgsDict(src_cfgs, dst_cfgs)
+    # return merged configs
     return dst_cfgs
 
 
@@ -193,9 +210,11 @@ class DDPPassthrough(DDP):
 
 
 def get_ddp_module(module, find_unused_parameters=False, **kwargs):
+    # let the model be wrapped by DDP and sent to the correct device for the current process
     if len(list(module.parameters())) == 0:
-        # for the case that loss module has not parameters.
+        # for the case that loss module has no parameter.
         return module
+    # device can be device object or integer
     device = torch.cuda.current_device()
     module = DDPPassthrough(module, device_ids=[device], output_device=device,
                             find_unused_parameters=find_unused_parameters, **kwargs)

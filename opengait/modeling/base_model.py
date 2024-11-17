@@ -1,6 +1,6 @@
 """The base model definition.
 
-This module defines the abstract meta model class and base model class. In the base model,
+This module defines the abstract metamodel class and base model class. In the base model,
  we define the basic model functions, like get_loader, build_network, and run_train, etc.
  The api of the base model is run_train and run_test, they are used in `opengait/main.py`.
 
@@ -24,15 +24,15 @@ from abc import abstractmethod
 
 from . import backbones
 from .loss_aggregator import LossAggregator
-from data.transform import get_transform
-from data.collate_fn import CollateFn
-from data.dataset import DataSet
-import data.sampler as Samplers
-from utils import Odict, mkdir, ddp_all_gather
-from utils import get_valid_args, is_list, is_dict, np2var, ts2np, list2var, get_attr_from
-from evaluation import evaluator as eval_functions
-from utils import NoOp
-from utils import get_msg_mgr
+from ..data.transform import get_transform
+from ..data.collate_fn import CollateFn
+from ..data.dataset import DataSet
+from ..data import sampler as Samplers
+from ..utils import Odict, mkdir, ddp_all_gather
+from ..utils import get_valid_args, is_list, is_dict, np2var, ts2np, list2var, get_attr_from
+from ..evaluation import evaluator as eval_functions
+from ..utils import NoOp
+from ..utils import get_msg_mgr
 
 __all__ = ['BaseModel']
 
@@ -40,7 +40,7 @@ __all__ = ['BaseModel']
 class MetaModel(metaclass=ABCMeta):
     """The necessary functions for the base model.
 
-    This class defines the necessary functions for the base model, in the base model, we have implemented them.
+    This class defines the necessary functions for the base model, which will be implemented in the base model.
     """
     @abstractmethod
     def get_loader(self, data_cfg):
@@ -104,9 +104,10 @@ class MetaModel(metaclass=ABCMeta):
 
 
 class BaseModel(MetaModel, nn.Module):
-    """Base model.
+    """
+    Base model.
 
-    This class inherites the MetaModel class, and implements the basic model functions, like get_loader, build_network, etc.
+    This class inherits the MetaModel class, and implements the basic model functions, like get_loader, build_network, etc.
 
     Attributes:
         msg_mgr: the massage manager.
@@ -118,13 +119,14 @@ class BaseModel(MetaModel, nn.Module):
     """
 
     def __init__(self, cfgs, training):
-        """Initialize the base model.
+        """
+        Initialize the base model.
 
         Complete the model initialization, including the data loader, the network, the optimizer, the scheduler, the loss.
 
         Args:
         cfgs:
-            All of the configs.
+            All the configs.
         training:
             Whether the model is in training mode.
         """

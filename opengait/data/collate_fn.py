@@ -1,7 +1,7 @@
 import math
 import random
 import numpy as np
-from utils import get_msg_mgr
+from ..utils import get_msg_mgr
 
 
 class CollateFn(object):
@@ -12,9 +12,9 @@ class CollateFn(object):
         self.sampler = sample_type[0]
         self.ordered = sample_type[1]
         if self.sampler not in ['fixed', 'unfixed', 'all']:
-            raise ValueError
+            raise ValueError(f'sampler type should be fixed, unfixed or all but got {self.sampler}')
         if self.ordered not in ['ordered', 'unordered']:
-            raise ValueError
+            raise ValueError(f'sampler type should be ordered or unordered, but got {self.ordered}')
         self.ordered = sample_type[1] == 'ordered'
 
         # fixed cases
@@ -105,8 +105,9 @@ class CollateFn(object):
             seqL_batch = [[len(fras_batch[i][0])
                            for i in range(batch_size)]]  # [1, p]
 
-            def my_cat(k): return np.concatenate(
-                [fras_batch[i][k] for i in range(batch_size)], 0)
+            def my_cat(k):
+                return np.concatenate([fras_batch[i][k] for i in range(batch_size)], 0)
+
             fras_batch = [[my_cat(k)] for k in range(feature_num)]  # [f, g]
 
             batch[-1] = np.asarray(seqL_batch)
