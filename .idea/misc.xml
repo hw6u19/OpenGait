@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="sdkName" value="py311-pytorch-cpu" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="py311-pytorch250-cuda124-nvcc126" project-jdk-type="Python SDK" />
+</project>
