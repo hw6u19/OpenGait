@@ -33,19 +33,23 @@ class CollateFn(object):
         if self.sampler == 'all' and 'frames_all_limit' in sample_config:
             self.frames_all_limit = sample_config['frames_all_limit']
 
-    def __call__(self, batch):
+    def __call__(self, batch: list):
         batch_size = len(batch)
         # currently, the functionality of feature_num is not fully supported yet, it refers to 1 now. We are supposed to make our framework support multiple source of input data, such as silhouette, or skeleton.
         feature_num = len(batch[0][0])
+        # sequence, label, type, view
         seqs_batch, labs_batch, typs_batch, vies_batch = [], [], [], []
 
         for bt in batch:
+            # bt is the returned value of dataset __getitem__，[data_list, seq_info]
+            # bt[0] is data_list
+            # bt[1] is seq_info [label, type, view, [related .pkl file paths]]
             seqs_batch.append(bt[0])
+            # list.index(value) is used to find the index of the first occurrence of a specified value in a list
             labs_batch.append(self.label_set.index(bt[1][0]))
             typs_batch.append(bt[1][1])
             vies_batch.append(bt[1][2])
 
-        global count
         count = 0
 
         def sample_frames(seqs):
@@ -87,7 +91,7 @@ class CollateFn(object):
                         indices, frames_num, replace=replace)
 
             for i in range(feature_num):
-                for j in indices[:self.frames_all_limit] if self.frames_all_limit > -1 and len(indices) > self.frames_all_limit else indices:
+                for j in indices[:self.frames_all_limit] if -1 < self.frames_all_limit < len(indices) else indices:
                     sampled_fras[i].append(seqs[i][j])
             return sampled_fras
 

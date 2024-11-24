@@ -56,7 +56,7 @@ class TripletSampler(torchdata.sampler.Sampler):
 
 def sync_random_sample_list(obj_list: list, k: int, common_choice=False):
     """
-    Get k random indices from the input dataset index list.
+    Get k random elements from the input object_list.
 
     Args:
         obj_list: dataset index list

@@ -51,6 +51,7 @@ class DataSet(torchdata.Dataset):
         for pth in paths:
             if pth.endswith('.pkl'):
                 with open(pth, 'rb') as f:
+                    # data saved in pickle file is in the type of numpy.ndarray
                     data = pickle.load(f)
                 f.close()
                 data_list.append(data)
