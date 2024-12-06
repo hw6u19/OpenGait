@@ -36,7 +36,7 @@ class GaitSSB_Pretrain(BaseModel):
                                 nn.ReLU(inplace=True),
                                 SeparateFCs(self.p, hidden_dim, out_channels))
 
-    def inputs_pretreament(self, inputs):
+    def inputs_pretreatment(self, inputs):
         if self.training:
             seqs_batch, labs_batch, typs_batch, vies_batch, seqL_batch = inputs
             trf_cfgs = self.engine_cfg['transform']
@@ -65,7 +65,7 @@ class GaitSSB_Pretrain(BaseModel):
 
             return ipts, labs, typs, vies, (seqL, seqL)
         else:
-            return super().inputs_pretreament(inputs)
+            return super().inputs_pretreatment(inputs)
 
     def encoder(self, inputs):
         sils, seqL = inputs

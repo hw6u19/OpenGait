@@ -3,8 +3,8 @@ import random
 import torchvision.transforms as T
 import cv2
 import math
-from data import transform as base_transform
-from utils import is_list, is_dict, get_valid_args
+from ..data import transform as base_transform
+from ..utils import is_list, is_dict, get_valid_args
 
 
 class NoOperation():
@@ -71,7 +71,7 @@ class BaseRgbTransform():
         return (x - self.mean) / self.std
 
 
-# **************** Data Agumentation ****************
+# **************** Data Argumentation ****************
 
 
 class RandomHorizontalFlip(object):
@@ -215,7 +215,7 @@ def Compose(trf_cfg):
     transform = T.Compose([get_transform(cfg) for cfg in trf_cfg])
     return transform
 
-
+# trf_cfg short for transform_config
 def get_transform(trf_cfg=None):
     if is_dict(trf_cfg):
         transform = getattr(base_transform, trf_cfg['type'])

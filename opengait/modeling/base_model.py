@@ -78,7 +78,7 @@ class MetaModel(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def inputs_pretreament(self, inputs):
+    def inputs_pretreatment(self, inputs):
         """Transform the input data based on transform setting."""
         raise NotImplementedError
 
@@ -125,10 +125,8 @@ class BaseModel(MetaModel, nn.Module):
         Complete the model initialization, including the data loader, the network, the optimizer, the scheduler, the loss.
 
         Args:
-        cfgs:
-            All the configs.
-        training:
-            Whether the model is in training mode.
+            cfgs: All the configs.
+            training: Whether the model is in training mode.
         """
 
         super(BaseModel, self).__init__()
@@ -182,8 +180,7 @@ class BaseModel(MetaModel, nn.Module):
             Backbone = nn.ModuleList([self.get_backbone(cfg)
                                       for cfg in backbone_cfg])
             return Backbone
-        raise ValueError(
-            "Error type for -Backbone-Cfg-, supported: (A list of) dict.")
+        raise ValueError("Error type for -Backbone-Cfg-, supported: (A list of) dict.")
 
     def build_network(self, model_cfg):
         if 'backbone_cfg' in model_cfg.keys():
@@ -295,7 +292,7 @@ class BaseModel(MetaModel, nn.Module):
             if classname.find('BatchNorm') != -1:
                 module.eval()
 
-    def inputs_pretreament(self, inputs):
+    def inputs_pretreatment(self, inputs):
         """Conduct transforms on input data.
 
         Args:
@@ -379,7 +376,7 @@ class BaseModel(MetaModel, nn.Module):
         rest_size = total_size
         info_dict = Odict()
         for inputs in self.test_loader:
-            ipts = self.inputs_pretreament(inputs)
+            ipts = self.inputs_pretreatment(inputs)
             with autocast(enabled=self.engine_cfg['enable_float16']):
                 retval = self.forward(ipts)
                 inference_feat = retval['inference_feat']
@@ -405,7 +402,7 @@ class BaseModel(MetaModel, nn.Module):
     def run_train(model):
         """Accept the instance object(model) here, and then run the train loop."""
         for inputs in model.train_loader:
-            ipts = model.inputs_pretreament(inputs)
+            ipts = model.inputs_pretreatment(inputs)
             with autocast(enabled=model.engine_cfg['enable_float16']):
                 retval = model(ipts)
                 training_feat, visual_summary = retval['training_feat'], retval['visual_summary']

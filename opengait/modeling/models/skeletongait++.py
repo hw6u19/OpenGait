@@ -66,7 +66,7 @@ class SkeletonGaitPP(BaseModel):
            )
        return nn.Sequential(*layers)
 
-   def inputs_pretreament(self, inputs):
+   def inputs_pretreatment(self, inputs):
        ### Ensure the same data augmentation for heatmap and silhouette
        pose_sils = inputs[0]
        new_data_list = []
@@ -80,7 +80,7 @@ class SkeletonGaitPP(BaseModel):
            cat_data = np.concatenate([pose, sil], axis=1) # [T, 3, H, W]
            new_data_list.append(cat_data)
        new_inputs = [[new_data_list], inputs[1], inputs[2], inputs[3], inputs[4]]
-       return super().inputs_pretreament(new_inputs)
+       return super().inputs_pretreatment(new_inputs)
 
    def forward(self, inputs):
        ipts, labs, _, _, seqL = inputs
