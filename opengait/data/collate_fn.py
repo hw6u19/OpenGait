@@ -49,28 +49,24 @@ class CollateFn(object):
         # currently, the functionality of feature_num is not fully supported yet, it refers to 1 now. We are supposed to make our framework support multiple source of input data, such as silhouette, or skeleton.
         self.feature_num = len(batch[0][0])
         # sequence, label, type, view
-        self.seqs_batch, self.labels_batch, self.types_batch, self.views_batch = [], [], [], []
-
-        for bt in batch:
-            # bt is the returned value of dataset __getitem__，[data_list, seq_info]
-            # bt[0] is data_list [data(numpy.ndarray)]
-            # bt[1] is seq_info [label, type, view, [related .pkl file paths]]
-            self.seqs_batch.append(bt[0])
-            # list.index(value) is used to find the index of the first occurrence of a specified value in a list
-            self.labels_batch.append(self.label_set.index(bt[1][0]))
-            self.types_batch.append(bt[1][1]) # [batch_size, 1]
-            self.views_batch.append(bt[1][2])
-
+        self.seqs_batch, self.labels_batch, self.types_batch, self.views_batch = self._information_init(batch)
         # f: feature_num
         # b: batch_size
         # p: batch_size_per_gpu
         # g: gpus_num
         self.frames_batch = [self._sample_frames(seqs) for seqs in self.seqs_batch]  # [batch, feature_num, sequence_length]
         batch = [self.frames_batch, self.labels_batch, self.types_batch, self.views_batch, None]
-
         batch = self._batch_reshape(batch)
-
         return batch
+
+    def _information_init(self, batch):
+        seqs_batch, labs_batch, typs_batch, vies_batch = [], [], [], []
+        for bt in batch:
+            seqs_batch.append(bt[0])
+            labs_batch.append(self.label_set.index(bt[1][0]))
+            typs_batch.append(bt[1][1])
+            vies_batch.append(bt[1][2])
+        return seqs_batch, labs_batch, typs_batch, vies_batch
 
     def _frames_num_check(self):
         """
