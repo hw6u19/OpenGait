@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="py311-pytorch-cpu" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="py311-pytorch250-cuda124-nvcc126" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="pytorch-cpu-py311" project-jdk-type="Python SDK" />
 </project>
